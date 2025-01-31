@@ -11,13 +11,17 @@ class GoogleSpreadsheetModel(QThread):
     worksheet_loaded = pyqtSignal(pl.DataFrame)
     error_occurred = pyqtSignal(str)
 
-    def __init__(self):
+    def __init__(self, path_to_credentials=None):
         super().__init__()
         self.table_df = None
         self.columns = None
         self.available_worksheets = []
         self.worksheet_to_load = None
         self.id_lookup_column = ""
+        self.path_to_credentials = path_to_credentials
+
+    def set_json_credentials(self, json_credentials):
+        self.path_to_credentials = json_credentials
 
     def run(self):
         try:
@@ -28,7 +32,7 @@ class GoogleSpreadsheetModel(QThread):
             self.error_occurred.emit(str(e))
 
     def _initialize_gspread(self):
-        self.client = gspread.service_account("credentials/simpletga-49f44a845afd.json")
+        self.client = gspread.service_account(self.path_to_credentials)
         self.spreadsheet = self.client.open_by_key("1HooNjAziwRFESXFmY-s6S8lxb8Ztt_YAEoxR19NaE-Q")
         self.available_worksheets = [worksheet.title for worksheet in self.spreadsheet.worksheets()]
 
