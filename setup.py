@@ -8,8 +8,6 @@ setup(
         'PyQt6',
         'gspread',
         'polars',
-        'pandas',
-        'sqlite3'
     ],
     entry_points={
         'console_scripts': [
