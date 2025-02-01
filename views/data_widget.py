@@ -14,15 +14,19 @@ class DataWidget(QWidget, Ui_DataWidget):
         self.data_widget_view_model.txt_files_found.connect(self.update_txt_directory_info)
         self.data_widget_view_model.worksheet_list_updated.connect(self.initialize_google_sheetname_combobox)
         self.data_widget_view_model.available_columns_updated.connect(self.initliaze_google_lookup_column)
+        self.data_widget_view_model.print_message.connect(self.print_message)
+        self.data_widget_view_model.new_example_id_available.connect(self.update_gspread_example_id)
+
 
 
         # Connect signals
         self.open_txt_directory_pushButton.clicked.connect(self.open_txt_directory)
         self.filename_regex_lineEdit.textChanged.connect(self.data_widget_view_model.set_regex)
-        #self.google_sheetnames_comboBox.currentTextChanged.connect(self.update_google_sheetname)
-        self.google_sheetnames_comboBox.currentTextChanged.connect(self.set_google_lookup_column)
+        self.google_sheetnames_comboBox.currentTextChanged.connect(self.set_gspread_sheet)
+        self.google_lookup_column_comboBox.currentTextChanged.connect(self.data_widget_view_model.set_gspread_lookup_column)
+        self.select_api_pushButton.clicked.connect(self.open_api_selection)
+        self.generate_hdf5_pushButton.clicked.connect(self.data_widget_view_model.create_dataset)
         self.filename_regex_lineEdit.setText(r"RT[0-9]{1,2}")
-
 
     def open_txt_directory(self):
         # get directory handler
@@ -34,26 +38,36 @@ class DataWidget(QWidget, Ui_DataWidget):
         self.example_filename_lineEdit.setText(example_filename)
         self.files_in_directory_lineEdit.setText(str(files_found))
 
-    def initialize_google_sheetname_combobox(self, sheetnames):
+    def initialize_google_sheetname_combobox(self, sheetnames, select_id):
         # block signals:
         self.google_sheetnames_comboBox.blockSignals(True)
         # clear all old items
         self.google_sheetnames_comboBox.clear()
         self.google_sheetnames_comboBox.addItems(sheetnames)
-        self.google_sheetnames_comboBox.setCurrentIndex(0)
-        self.data_widget_view_model.select_sheet_from_gspread(sheetnames[0])
+        self.google_sheetnames_comboBox.setCurrentIndex(select_id)
+        self.data_widget_view_model.set_gspread_sheet(sheetnames[0])
         # unblock signals:
         self.google_sheetnames_comboBox.blockSignals(False)
 
-    def initliaze_google_lookup_column(self, columns):
+    def initliaze_google_lookup_column(self, columns, select_id):
         # block signals:
         self.google_lookup_column_comboBox.blockSignals(True)
         # clear all old items
         self.google_lookup_column_comboBox.clear()
         self.google_lookup_column_comboBox.addItems(columns)
-        self.google_lookup_column_comboBox.setCurrentIndex(0)
+        self.google_lookup_column_comboBox.setCurrentIndex(select_id)
         # unblock signals:
         self.google_lookup_column_comboBox.blockSignals(False)
 
-    def set_google_lookup_column(self, column):
-        self.data_widget_view_model.select_sheet_from_gspread(column)
+    def set_gspread_sheet(self, column):
+        self.data_widget_view_model.set_gspread_sheet(column)
+
+    def open_api_selection(self):
+        directory_path, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select API JSON file")
+        self.data_widget_view_model.set_api_json(directory_path)
+
+    def print_message(self, message):
+        self.logging_plainTextEdit.appendPlainText(message)
+
+    def update_gspread_example_id(self, example_id):
+        self.google_lookup_id_lineEdit.setText(example_id)
