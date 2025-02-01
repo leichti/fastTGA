@@ -1,10 +1,10 @@
 from PyQt6.QtCore import QObject, pyqtSignal
 
-from models.google_spreadsheet_model import GoogleSpreadsheetModel
-from models.tga_dataset_model import TGADatasetModel
-from models.txt_directory_model import TXTDirectoryModel
-from services.tga_entry_preparator import TGAEntryPreparator
-from services.tga_import_service import TGAImportService
+from fastTGA.models.google_spreadsheet_model import GoogleSpreadsheetModel
+from fastTGA.models.tga_dataset_model import TGADatasetModel
+from fastTGA.models.txt_directory_model import TXTDirectoryModel
+from fastTGA.services.tga_entry_preparator import TGAEntryPreparator
+from fastTGA.services.tga_import_service import TGAImportService
 
 
 class DataWidgetViewModel(QObject):

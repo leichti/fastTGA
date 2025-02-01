@@ -1,15 +1,13 @@
-import sys
 from PyQt6.QtWidgets import (
-    QApplication,
     QMainWindow,
     QWidget,
     QHBoxLayout,
     QTabWidget,
 )
 
-from views.data_overview_table_widget import DataOverviewTableWidget
-from views.data_preparation_widget import DataPreparationWidget
-from views.data_widget import DataWidget
+from fastTGA.views.data_overview_table_widget import DataOverviewTableWidget
+from fastTGA.views.data_preparation_widget import DataPreparationWidget
+from fastTGA.views.data_widget import DataWidget
 
 
 class MainWindow(QMainWindow):

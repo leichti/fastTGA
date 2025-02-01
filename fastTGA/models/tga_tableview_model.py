@@ -2,7 +2,7 @@ from typing import Any
 
 from PyQt6.QtCore import QAbstractTableModel, QModelIndex, Qt
 
-from models.tga_dataset_model import TGADatasetModel
+from fastTGA.models.tga_dataset_model import TGADatasetModel
 
 
 class TGATableviewModel(QAbstractTableModel):

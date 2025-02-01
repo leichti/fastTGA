@@ -1,7 +1,7 @@
 from PyQt6 import QtWidgets
 from PyQt6.QtWidgets import QWidget
-from ui.data_widget_ui import Ui_DataWidget
-from viewmodels.data_widget_view_model import DataWidgetViewModel
+from fastTGA.ui.data_widget_ui import Ui_DataWidget
+from fastTGA.viewmodels.data_widget_view_model import DataWidgetViewModel
 
 
 class DataWidget(QWidget, Ui_DataWidget):

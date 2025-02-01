@@ -1,5 +1,5 @@
-from models.google_spreadsheet_model import GoogleSpreadsheetModel
-from models.tga_file import TGAFile
+from fastTGA.models.google_spreadsheet_model import GoogleSpreadsheetModel
+from fastTGA.models.tga_file import TGAFile
 
 
 class TGAEntryPreparator:

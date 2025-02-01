@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QWidget
 
-from ui.data_overview_table_widget_ui import Ui_DataOverviewTableWidget
+from fastTGA.ui.data_overview_table_widget_ui import Ui_DataOverviewTableWidget
 
 
 class DataOverviewTableWidget(QWidget, Ui_DataOverviewTableWidget):

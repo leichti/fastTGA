@@ -2,8 +2,8 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QWidget
 from PyQt6.QtGui import QDoubleValidator
 
-from ui.tga_data_preparation_widget_ui import Ui_TGADataPreparationWidget
-from viewmodels.data_widget_view_model import DataWidgetViewModel
+from fastTGA.ui.tga_data_preparation_widget_ui import Ui_TGADataPreparationWidget
+from fastTGA.viewmodels.data_widget_view_model import DataWidgetViewModel
 
 
 class DataPreparationWidget(QWidget, Ui_TGADataPreparationWidget):

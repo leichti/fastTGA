@@ -1,11 +1,6 @@
-import json
-import os
-import polars as pl
-from PyQt6.QtCore import QObject, pyqtSignal
-
-from models.google_spreadsheet_model import GoogleSpreadsheetModel
-from models.tga_file import TGAFile
-from models.txt_directory_model import TXTDirectoryModel
+from fastTGA.models.google_spreadsheet_model import GoogleSpreadsheetModel
+from fastTGA.models.tga_file import TGAFile
+from fastTGA.models.txt_directory_model import TXTDirectoryModel
 
 from PyQt6.QtCore import QObject, pyqtSignal, QSettings
 import polars as pl
