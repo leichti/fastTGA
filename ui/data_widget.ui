@@ -15,6 +15,24 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <item>
+      <widget class="QPushButton" name="select_api_pushButton">
+       <property name="text">
+        <string>Select API Key</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="open_txt_directory_pushButton">
+       <property name="text">
+        <string>Select TGA Folder</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,2">
      <item>
       <widget class="QLabel" name="label">
@@ -25,37 +43,6 @@
      </item>
      <item>
       <widget class="QComboBox" name="google_sheetnames_comboBox"/>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_4">
-     <item>
-      <widget class="QPushButton" name="open_txt_directory_pushButton">
-       <property name="text">
-        <string>TGA Folder</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Orientation::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QPushButton" name="generate_hdf5_pushButton">
-       <property name="text">
-        <string>Generate HDF5</string>
-       </property>
-      </widget>
      </item>
     </layout>
    </item>
@@ -142,6 +129,16 @@
       <widget class="QLineEdit" name="google_lookup_id_lineEdit"/>
      </item>
     </layout>
+   </item>
+   <item>
+    <widget class="QPushButton" name="generate_hdf5_pushButton">
+     <property name="text">
+      <string>Create Dataset</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPlainTextEdit" name="logging_plainTextEdit"/>
    </item>
    <item>
     <spacer name="verticalSpacer">
