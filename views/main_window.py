@@ -7,15 +7,19 @@ from PyQt6.QtWidgets import (
     QTabWidget,
 )
 
-from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
+from views.data_overview_table_widget import DataOverviewTableWidget
+from views.data_preparation_widget import DataPreparationWidget
+from views.data_widget import DataWidget
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, data_widget):
+    def __init__(self,
+                 data_widget : DataWidget,
+                 data_preparation_widget : DataPreparationWidget,
+                 data_view_table_widget : DataOverviewTableWidget):
         super().__init__()
 
-        self.setWindowTitle("PyQt6 Matplotlib App")
+        self.setWindowTitle("FastTGA Data Transformer")
 
         # Create the main layout (horizontal)
         main_layout = QHBoxLayout()
@@ -23,12 +27,13 @@ class MainWindow(QMainWindow):
         # --- Left side: QTabWidget ---
         self.tab_widget = QTabWidget()
         self.tab_widget.addTab(data_widget, "Import Data")
+        self.tab_widget.addTab(data_preparation_widget, "Data Preparation")
         main_layout.addWidget(self.tab_widget)
 
+
         # --- Right side: Matplotlib Canvas ---
-        self.figure = Figure()
-        self.canvas = FigureCanvas(self.figure)
-        main_layout.addWidget(self.canvas)
+        main_layout.addWidget(data_view_table_widget)
+
 
         # --- Set the main layout to a central widget ---
         central_widget = QWidget()
