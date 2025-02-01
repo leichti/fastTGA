@@ -95,6 +95,42 @@ class TGAFile():
         }
         self.data = self.data.rename(rename_dict, strict=False)
 
+    def downsample(self, downsample_frequency, unit='s'):
+        df = self.data
+        df = self._convert_time_to_milliseconds(df)
+        downsample_frequency = self._convert_frequency_to_milliseconds(downsample_frequency, unit)
+        df = self._downsample_data(df, downsample_frequency)
+        self.data = self._convert_time_back_to_seconds(df)
+
+    def _convert_time_to_milliseconds(self, df):
+        return df.with_columns(
+            (pl.col("t_s") * 1000).cast(pl.Int64),
+        )
+
+    def _convert_frequency_to_milliseconds(self, frequency, unit):
+        if unit == 's':
+            return int(frequency * 1000)
+        elif unit == 'm':
+            return int(frequency * 1000 * 60)
+        elif unit == 'h':
+            return int(frequency * 1000 * 60 * 60)
+        else:
+            raise ValueError(f"Unsupported unit: {unit}")
+
+    def _downsample_data(self, df, downsample_frequency):
+        return df.group_by_dynamic("t_s", every=f"{downsample_frequency}i").agg(pl.all().mean())
+
+    def _convert_time_back_to_seconds(self, df):
+        return df.with_columns(
+            (pl.col("t_s") / (1000 * 60)).cast(pl.Float64),
+        )
+
+    def calculate_dm_dt_in_s(self):
+        # recalculate dmdt as mg per minute
+        self.data = self.data.with_columns(
+            (pl.col("dm_mg").diff() / pl.col("t_s").diff()).alias("dmdt_mg_s")
+        )
+
 
 if __name__ == "__main__":
     file = TGAFile(
