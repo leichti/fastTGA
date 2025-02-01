@@ -16,7 +16,7 @@ class TXTDirectoryModel(QObject):
             self.load_txt_files()
 
 
-    def set_txt_directory(self, txt_directory):
+    def set_path(self, txt_directory):
         self.txt_directory = txt_directory
         self.load_txt_files()
 
