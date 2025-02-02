@@ -14,29 +14,38 @@ class TGADatasetModel(QObject):
         super().__init__()
         self.settings = QSettings('HydrogenreductionLab', 'fastTGA')
 
+
         # Initialize data members
+        self.metadata_file = None
         self.metadata_table = pl.DataFrame()
 
         # Load last used directory from settings
-        self.path_to_directory = self.settings.value('tga_dataset/directory', '')
+        self.path_to_input = self.settings.value('tga_dataset/input_directory', '')
+        self.path_to_output = self.settings.value('tga_dataset/output_directory', '')
 
-        if self.path_to_directory:
+        if self.path_to_output:
             self._initialize_directory()
 
     def _initialize_directory(self):
         """Initialize directory and load metadata if available"""
-        if not os.path.exists(self.path_to_directory):
-            os.makedirs(self.path_to_directory, exist_ok=True)
+        if not os.path.exists(self.path_to_output):
+            os.makedirs(self.path_to_output, exist_ok=True)
 
-        self.metadata_file = os.path.join(self.path_to_directory, "metadata.parquet")
+        self.metadata_file = os.path.join(self.path_to_output, "metadata.parquet")
 
         if os.path.exists(self.metadata_file):
             self.metadata_table = pl.read_parquet(self.metadata_file)
 
-    def set_path(self, path_to_directory):
+    def set_input_path(self, path_to_directory):
         """Set new working directory and save to settings"""
-        self.path_to_directory = path_to_directory
-        self.settings.setValue('tga_dataset/directory', path_to_directory)
+        self.path_to_input = path_to_directory
+        self.settings.setValue('tga_dataset/input_directory', path_to_directory)
+
+
+    def set_output_path(self, path_to_directory):
+        """Set new output directory and save to settings"""
+        self.path_to_output = path_to_directory
+        self.settings.setValue('tga_dataset/output_directory', path_to_directory)
         self._initialize_directory()
 
     def save_metadata(self):
@@ -47,7 +56,7 @@ class TGADatasetModel(QObject):
 
     def add_entry(self, tga_file: TGAFile, gspread_metadata, save: bool = True):
         """Add or update a TGA entry with associated metadata"""
-        if not self.path_to_directory:
+        if not self.path_to_output:
             self.message_signal.emit("No directory set. Please set a directory first.")
             return
 
@@ -59,7 +68,7 @@ class TGADatasetModel(QObject):
         new_row = pl.DataFrame([combined_metadata])
 
         # Save TGA data
-        sample_parquet = os.path.join(self.path_to_directory, f"sample_{sample_id}.parquet")
+        sample_parquet = os.path.join(self.path_to_output, f"sample_{sample_id}.parquet")
         if os.path.exists(sample_parquet):
             os.remove(sample_parquet)
         tga_df.write_parquet(sample_parquet, compression="gzip")
@@ -71,15 +80,16 @@ class TGADatasetModel(QObject):
 
         if save:
             self.save_metadata()
+
         self.message_signal.emit(f"Added/updated entry: {sample_id}")
 
     def read_entry(self, sample_id: str) -> pl.DataFrame | None:
         """Load TGA data for given sample"""
-        if not self.path_to_directory:
+        if not self.path_to_input:
             self.message_signal.emit("No directory set")
             return None
 
-        sample_parquet = os.path.join(self.path_to_directory, f"sample_{sample_id}.parquet")
+        sample_parquet = os.path.join(self.path_to_input, f"sample_{sample_id}.parquet")
         if os.path.exists(sample_parquet):
             return pl.read_parquet(sample_parquet)
         else:

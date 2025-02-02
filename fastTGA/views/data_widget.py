@@ -18,7 +18,6 @@ class DataWidget(QWidget, Ui_DataWidget):
         self.data_widget_view_model.new_example_id_available.connect(self.update_gspread_example_id)
 
 
-
         # Connect signals
         self.open_txt_directory_pushButton.clicked.connect(self.open_txt_directory)
         self.filename_regex_lineEdit.textChanged.connect(self.data_widget_view_model.set_regex)
@@ -26,6 +25,7 @@ class DataWidget(QWidget, Ui_DataWidget):
         self.google_lookup_column_comboBox.currentTextChanged.connect(self.data_widget_view_model.set_gspread_lookup_column)
         self.select_api_pushButton.clicked.connect(self.open_api_selection)
         self.generate_hdf5_pushButton.clicked.connect(self.data_widget_view_model.create_dataset)
+        self.select_output_directory_pushButton.clicked.connect(self.open_directory_dialog_for_output)
         self.filename_regex_lineEdit.setText(r"RT[0-9]{1,2}")
 
     def open_txt_directory(self):
@@ -71,3 +71,7 @@ class DataWidget(QWidget, Ui_DataWidget):
 
     def update_gspread_example_id(self, example_id):
         self.google_lookup_id_lineEdit.setText(example_id)
+
+    def open_directory_dialog_for_output(self):
+        directory = QtWidgets.QFileDialog.getExistingDirectory(self, "Select Directory")
+        self.data_widget_view_model.select_output_directory(directory)

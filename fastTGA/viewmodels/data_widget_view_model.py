@@ -35,7 +35,7 @@ class DataWidgetViewModel(QObject):
 
     def set_txt_directory(self, directory):
         self.txt_directory_model.set_path(directory)
-        self.tga_dataset_model.set_path(directory)
+        self.tga_dataset_model.set_input_path(directory)
         self.txt_directory_model.load_txt_files()
 
     def txt_files_loaded(self, txt_files):
@@ -92,4 +92,6 @@ class DataWidgetViewModel(QObject):
     def set_sample_frequency(self, frequency):
         self.tga_data_entry_preparator.config["downsample_frequency"] = frequency
 
+    def select_output_directory(self, directory):
+        self.tga_dataset_model.set_output_path(directory)
 

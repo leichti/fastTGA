@@ -23,6 +23,9 @@ class Ui_DataWidget(object):
         self.open_txt_directory_pushButton = QtWidgets.QPushButton(parent=DataWidget)
         self.open_txt_directory_pushButton.setObjectName("open_txt_directory_pushButton")
         self.horizontalLayout_4.addWidget(self.open_txt_directory_pushButton)
+        self.select_output_directory_pushButton = QtWidgets.QPushButton(parent=DataWidget)
+        self.select_output_directory_pushButton.setObjectName("select_output_directory_pushButton")
+        self.horizontalLayout_4.addWidget(self.select_output_directory_pushButton)
         self.verticalLayout.addLayout(self.horizontalLayout_4)
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
@@ -116,8 +119,9 @@ class Ui_DataWidget(object):
     def retranslateUi(self, DataWidget):
         _translate = QtCore.QCoreApplication.translate
         DataWidget.setWindowTitle(_translate("DataWidget", "Form"))
-        self.select_api_pushButton.setText(_translate("DataWidget", "Select API Key"))
-        self.open_txt_directory_pushButton.setText(_translate("DataWidget", "Select TGA Folder"))
+        self.select_api_pushButton.setText(_translate("DataWidget", "Google API"))
+        self.open_txt_directory_pushButton.setText(_translate("DataWidget", "Import From"))
+        self.select_output_directory_pushButton.setText(_translate("DataWidget", "Write To"))
         self.label.setText(_translate("DataWidget", "Sheetname"))
         self.label_4.setText(_translate("DataWidget", "Files Found"))
         self.label_2.setText(_translate("DataWidget", "Regex"))

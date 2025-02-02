@@ -15,11 +15,9 @@ class TXTDirectoryModel(QObject):
         if txt_directory:
             self.load_txt_files()
 
-
     def set_path(self, txt_directory):
         self.txt_directory = txt_directory
         self.load_txt_files()
-
 
     def set_file_filter(self, regex):
         self.regex = regex

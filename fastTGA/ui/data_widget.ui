@@ -19,14 +19,21 @@
      <item>
       <widget class="QPushButton" name="select_api_pushButton">
        <property name="text">
-        <string>Select API Key</string>
+        <string>Google API</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="open_txt_directory_pushButton">
        <property name="text">
-        <string>Select TGA Folder</string>
+        <string>Import From</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="select_output_directory_pushButton">
+       <property name="text">
+        <string>Write To</string>
        </property>
       </widget>
      </item>
