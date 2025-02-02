@@ -196,6 +196,36 @@ class SampleRepository:
             print(f"{col}: {uniques}")
 
 
+def select(self) -> List[Dict[str, Any]]:
+    """
+    Iterates over the filtered metadata rows, loads each corresponding sample DataFrame,
+    and returns a list of dictionaries with keys "id" and "data" where:
+      - "id" is the sample identifier.
+      - "data" is the sample DataFrame loaded from the corresponding file.
+
+    Returns:
+        List[Dict[str, Any]]: List of dictionaries containing sample ids and their data.
+
+    Raises:
+        KeyError: If the 'id' column is missing in the metadata.
+    """
+    filtered = self._get_filtered_metadata()
+    results = []
+    id_col = "id"
+
+    if id_col not in filtered.columns:
+        raise KeyError(f"Metadata does not contain expected '{id_col}' column.")
+
+    # Iterate over the sample ids in the filtered metadata
+    for sample_id in filtered[id_col]:
+        try:
+            # Ensure we convert the sample_id to a string if needed
+            sample_df = self._get_sample_df(str(sample_id))
+            results.append({"id": sample_id, "data": sample_df})
+        except FileNotFoundError:
+            print(f"Warning: Sample file for id = {sample_id} not found. Skipping.")
+    return results
+
 # === Example usage ===
 if __name__ == "__main__":
     # Adjust the path to your folder containing metadata.parquet and sample_*.parquet files.
