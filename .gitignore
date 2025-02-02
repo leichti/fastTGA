@@ -1,3 +1,5 @@
 /fastTGA/models/credentials/simpletga-49f44a845afd.json
 /fastTGA/app_state/spreadsheet_state.json
 /.venv/
+/build/
+/dist/
