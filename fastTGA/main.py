@@ -4,15 +4,15 @@ import sys
 
 from PyQt6 import QtWidgets
 
-from models.google_spreadsheet_model import GoogleSpreadsheetModel
-from models.tga_dataset_model import TGADatasetModel
-from models.tga_tableview_model import TGATableviewModel
-from models.txt_directory_model import TXTDirectoryModel
-from viewmodels.data_widget_view_model import DataWidgetViewModel
-from views.data_overview_table_widget import DataOverviewTableWidget
-from views.main_window import MainWindow
-from views.data_widget import DataWidget
-from views.data_preparation_widget import DataPreparationWidget
+from fastTGA.models.google_spreadsheet_model import GoogleSpreadsheetModel
+from fastTGA.models.tga_dataset_model import TGADatasetModel
+from fastTGA.models.tga_tableview_model import TGATableviewModel
+from fastTGA.models.txt_directory_model import TXTDirectoryModel
+from fastTGA.viewmodels.data_widget_view_model import DataWidgetViewModel
+from fastTGA.views.data_overview_table_widget import DataOverviewTableWidget
+from fastTGA.views.main_window import MainWindow
+from fastTGA.views.data_widget import DataWidget
+from fastTGA.views.data_preparation_widget import DataPreparationWidget
 
 
 def load_config(config_path='config.json'):
