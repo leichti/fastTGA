@@ -3,6 +3,8 @@ from typing import List, Dict, Any
 
 import polars as pl
 
+from fastTGA.services.data_filters import DataFilter
+
 
 class SampleRepository:
     def __init__(self, folder_path: str):
@@ -19,6 +21,7 @@ class SampleRepository:
         self.metadata_file = os.path.join(folder_path, "metadata.parquet")
         self.metadata = pl.read_parquet(self.metadata_file)
         self._filters: List[pl.Expr] = []
+        self.data_filters: List[DataFilter] = []
 
     def filter(self, column: str, value, operator: str = None) -> "SampleRepository":
         """
@@ -65,6 +68,21 @@ class SampleRepository:
         self._filters.append(expr)
         return self
 
+    def hide_multiple(self, values: List[str]) -> "SampleRepository":
+        """
+        Hides samples whose 'id' is in the provided list.
+        This method is a specific version of a filter, adding a condition that excludes rows
+        where 'id' is one of the specified values.
+
+        Args:
+            values (List[str]): List of sample ids to hide.
+
+        Returns:
+            SampleRepository: The repository instance for method chaining.
+        """
+        self._filters.append(~pl.col("id").is_in(values))
+        return self
+
     def reset_filters(self) -> "SampleRepository":
         """
         Resets all applied filters.
@@ -106,42 +124,6 @@ class SampleRepository:
         if not os.path.exists(sample_path):
             raise FileNotFoundError(f"Sample file not found: {sample_path}")
         return pl.read_parquet(sample_path)
-
-    def select_single(self, sample_id: str) -> pl.DataFrame:
-        """
-        Returns a single sample DataFrame for the given sample_id if it exists in the (filtered) metadata.
-        Returns None if the given sample_id is not found.
-
-        Args:
-            sample_id (str): The sample id to select.
-
-        Returns:
-            pl.DataFrame: Sample data or None if not found.
-        """
-        filtered = self._get_filtered_metadata().filter(pl.col("id") == sample_id)
-        if filtered.height == 0:
-            return None
-        return self._get_sample_df(sample_id)
-
-    def select_multiple(self, key: str, values: List[str]) -> List[Dict[str, Any]]:
-        """
-        For each value in `values`, if a matching row is found in the (filtered) metadata (using the provided key),
-        then the corresponding sample file is loaded.
-
-        Args:
-            key (str): The column name in the metadata to search (typically "id").
-            values (List[str]): List of values to look up.
-
-        Returns:
-            List[Dict[str, Any]]: A list of dictionaries with keys "id" and "df".
-        """
-        results = []
-        filtered = self._get_filtered_metadata()
-        for val in values:
-            if filtered.filter(pl.col(key) == val).height > 0:
-                sample_df = self._get_sample_df(val)
-                results.append({"id": val, "df": sample_df})
-        return results
 
     def head(self, n: int = 5) -> pl.DataFrame:
         """
@@ -195,22 +177,157 @@ class SampleRepository:
         for col, uniques in unique_cols.items():
             print(f"{col}: {uniques}")
 
-
-    def select(self) -> List[Dict[str, Any]]:
+    def match_time_column_for_temperature(
+            self,
+            target_temperature: float,
+            time_column: str = "t_s",
+            temperature_column: str = "T_C"
+    ) -> "SampleRepository":
         """
-        Iterates over the filtered metadata rows, loads each corresponding sample DataFrame,
-        and returns a list of dictionaries with keys "id" and "data" where:
-          - "id" is the sample identifier.
-          - "data" is the sample DataFrame loaded from the corresponding file.
+        Sets the time matching settings for the repository so that subsequent sample loading
+        (via select_single, select_multiple, or select) will adjust the sample DataFrames such that
+        the new time column (time_column) is shifted so that t_s = 0 is at the moment when the temperature
+        (temperature_column) is closest to target_temperature.
+
+        Args:
+            target_temperature (float): The target temperature used to align the time columns.
+            time_column (str, optional): The name of the new time column to store the shifted time. Default is "t_s".
+            temperature_column (str, optional): The name of the temperature column in the sample data. Default is "T_C".
 
         Returns:
-            List[Dict[str, Any]]: List of dictionaries containing sample ids and their data.
-
-        Raises:
-            KeyError: If the 'id' column is missing in the metadata.
+            SampleRepository: The repository instance (for potential method chaining).
         """
-        filtered = self._get_filtered_metadata()
+        self._time_matching_settings = {
+            "target_temperature": target_temperature,
+            "time_column": time_column,
+            "temperature_column": temperature_column,
+        }
+        return self
+
+    def _adjust_time_column(
+            self,
+            sample_df: pl.DataFrame,
+            target_temperature: float,
+            time_column: str = "t_s",
+            temperature_column: str = "T_C"
+    ) -> pl.DataFrame:
+        """
+        Adjusts the time column in a given sample DataFrame based on a target temperature.
+
+        It finds the row where the temperature (from temperature_column) is closest to the target_temperature,
+        then computes a new time shift such that t_s=0 at that row. A new column 't_s' is appended to the DataFrame,
+        which equals (original time - time at closest temperature).
+
+        Args:
+            sample_df (pl.DataFrame): The sample DataFrame.
+            target_temperature (float): The target temperature value.
+            time_column (str, optional): Name of the time column. Defaults to "time".
+            temperature_column (str, optional): Name of the temperature column. Defaults to "temperature".
+
+        Returns:
+            pl.DataFrame: A new DataFrame with an added 't_s' column.
+        """
+        # Compute the absolute difference between the temperature values and the target temperature.
+        diff_series = (sample_df[temperature_column] - target_temperature).abs()
+
+        # Find the index (row) at which this difference is minimal.
+        idx = diff_series.arg_min()
+
+        # Get the time value at this index in order to use it as a shift anchor.
+        time_at_target = sample_df[time_column][idx]
+
+        # Create a new DataFrame with an additional column "t_s" for the shifted time.
+        adjusted_df = sample_df.with_columns((pl.col(time_column) - time_at_target).alias("t_s"))
+        return adjusted_df
+
+    def _load_sample_df(self, sample_id: str) -> pl.DataFrame:
+        """
+        Loads a sample DataFrame based on its id and applies the time column adjustment
+        if time matching settings have been configured (via match_time_column_for_temperature).
+
+        Args:
+            sample_id (str): The sample identifier.
+
+        Returns:
+            pl.DataFrame: The (possibly) adjusted sample DataFrame.
+        """
+        sample_df = self._get_sample_df(sample_id)
+        # If time matching settings have been applied, adjust the time column:
+        if hasattr(self, "_time_matching_settings") and self._time_matching_settings:
+            s = self._time_matching_settings
+            sample_df = self._adjust_time_column(
+                sample_df,
+                s["target_temperature"],
+                s["time_column"],
+                s["temperature_column"]
+            )
+        sample_df = self._apply_data_filters(sample_df)
+        return sample_df
+
+    # Updated select_single to use _load_sample_df instead of _get_sample_df:
+    def select_single(self, sample_id: str) -> pl.DataFrame:
+        """
+        Returns a single sample DataFrame for the given sample_id if it exists in the (filtered) metadata.
+        If the repository was configured to adjust the time column (via match_time_column_for_temperature),
+        the returned DataFrame will have the adjusted time column.
+
+        Args:
+            sample_id (str): The sample id to select.
+
+        Returns:
+            pl.DataFrame: Sample data or None if not found.
+        """
+        filtered = self._get_filtered_metadata().filter(pl.col("id") == sample_id)
+        if filtered.height == 0:
+            return None
+        return self._load_sample_df(str(sample_id))
+
+    def get_metadata_for_id(self, sample_id: str) -> dict:
+        """
+        Returns the metadata row for a given sample id.
+
+        Args:
+            sample_id (str): The sample id to look up.
+
+        Returns:
+            pl.DataFrame: The metadata row for the given sample id.
+        """
+        return self.metadata.filter(pl.col("id") == sample_id).to_dict()
+
+    # Updated select_multiple to use _load_sample_df:
+    def select_multiple(self, key: str, values: List[str]) -> List[Dict[str, Any]]:
+        """
+        For each value in `values`, if a matching row is found in the (filtered) metadata (using the provided key),
+        then the corresponding sample file is loaded and adjusted (if matching settings exist).
+
+        Args:
+            key (str): The column name in the metadata to search (typically "id").
+            values (List[str]): List of values to look up.
+
+        Returns:
+            List[Dict[str, Any]]: A list of dictionaries with keys "id" and "data".
+        """
         results = []
+        filtered = self._get_filtered_metadata()
+        for val in values:
+            if filtered.filter(pl.col(key) == val).height > 0:
+                sample_df = self._load_sample_df(str(val))
+                results.append({"id": val, "data": sample_df})
+        return results
+
+
+# Updated select to use _load_sample_df:
+    def select(self) -> List[Dict[str, Any]]:
+        """
+        Iterates over the filtered metadata rows, loads each corresponding sample DataFrame (applying
+        time column adjustments if match_time_column_for_temperature was previously called), and returns
+        a list of dictionaries with keys "id" and "data".
+
+        Returns:
+            List[Dict[str, Any]]: List of dictionaries containing sample ids and their (adjusted) data.
+        """
+        results = []
+        filtered = self._get_filtered_metadata()
         id_col = "id"
 
         if id_col not in filtered.columns:
@@ -219,12 +336,33 @@ class SampleRepository:
         # Iterate over the sample ids in the filtered metadata
         for sample_id in filtered[id_col]:
             try:
-                # Ensure we convert the sample_id to a string if needed
-                sample_df = self._get_sample_df(str(sample_id))
-                results.append({"id": sample_id, "data": sample_df})
+                adjusted_df = self._load_sample_df(str(sample_id))
+                results.append({"id": sample_id, "data": adjusted_df})
             except FileNotFoundError:
-                print(f"Warning: Sample file for id = {sample_id} not found. Skipping.")
+                print(f"Warning: Sample file for id '{sample_id}' not found. Skipping.")
         return results
+
+    def data_filter(self, data_filter: DataFilter) -> "SampleRepository":
+        """
+        Registers a DataFilter to be applied on sample data.
+        Multiple filters can be chained.
+
+        Args:
+            data_filter (DataFilter): An instance of a DataFilter.
+
+        Returns:
+            SampleRepository: self, for method chaining.
+        """
+        self.data_filters.append(data_filter)
+        return self
+
+    def _apply_data_filters(self, df: pl.DataFrame) -> pl.DataFrame:
+        """
+        Passes the sample DataFrame sequentially through all registered data filters.
+        """
+        for filt in self.data_filters:
+            df = filt.apply(df)
+        return df
 
 # === Example usage ===
 if __name__ == "__main__":
