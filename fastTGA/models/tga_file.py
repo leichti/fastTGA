@@ -21,7 +21,7 @@ class TGAFile():
         date_str = date_str.strip('# ')
 
         de_month_map = {
-            'Jan': '01', 'Feb': '02', 'Mär': '03', 'Apr': '04',
+            'Jan': '01', 'Feb': '02', 'Mrz': '03', 'Apr': '04',
             'Mai': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08',
             'Sep': '09', 'Okt': '10', 'Nov': '11', 'Dez': '12'
         }
