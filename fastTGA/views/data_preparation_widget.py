@@ -32,6 +32,9 @@ class DataPreparationWidget(QWidget, Ui_TGADataPreparationWidget):
         self.dmdt_checkBox.stateChanged.connect(self.on_dmdt_checkbox_state_changed)
         self.sample_frequency_lineEdit.textChanged.connect(self.on_sample_frequency_text_changed)
 
+        self.sample_frequency_lineEdit.setText("5")
+        self.dmdt_checkBox.setCheckState(Qt.CheckState.Checked)
+
     def on_dmdt_checkbox_state_changed(self, state: int) -> None:
         """
         Handle changes to the dmdt checkbox state.
