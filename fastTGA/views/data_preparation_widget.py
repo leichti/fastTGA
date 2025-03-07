@@ -40,7 +40,7 @@ class DataPreparationWidget(QWidget, Ui_TGADataPreparationWidget):
             state (int): The new state of the checkbox.
         """
         # Converts state to a boolean; assuming Qt.CheckState.Checked equals True.
-        boolean_state = (state == Qt.CheckState.Checked)
+        boolean_state = (state == 2)
         self.data_widget_view_model.set_dmdt_checkbox_state(boolean_state)
 
     def on_sample_frequency_text_changed(self, frequency: str) -> None:
