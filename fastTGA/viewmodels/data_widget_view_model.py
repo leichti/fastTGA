@@ -67,7 +67,7 @@ class DataWidgetViewModel(QObject):
         columns = table_df.columns
         self.available_columns_updated.emit(columns, 0)
         example_id = self.gspread_model.get_first_id()
-        self.new_example_id_available.emit(example_id)
+        self.new_example_id_available.emit(str(example_id))
         self.print_message.emit(f"Worksheet loaded with {len(table_df)} rows and {len(columns)} columns")
 
     def set_api_json(self, file_path):
