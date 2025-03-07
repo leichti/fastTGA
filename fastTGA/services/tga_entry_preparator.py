@@ -24,7 +24,7 @@ class TGAEntryPreparator:
             tga_file.downsample(downsample_frequency)
 
         if self.config.get("calculate_dm_dt", False):
-            tga_file.calculate_dm_dt()
+            tga_file.calculate_dm_dt_in_s()
 
         # Attempt to look up metadata by ID first
         metadata = gspread_model.get_metadata(file_id)
