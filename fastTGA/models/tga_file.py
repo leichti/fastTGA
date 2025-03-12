@@ -74,7 +74,7 @@ class TGAFile():
                                 separator=',',
                                 encoding='cp1252',
                                 skip_rows=row_offset - 1,
-                                infer_schema_length=30000)
+                                infer_schema_length=90000)
 
         rename_dict = {
             "Time(s)": "t_s",
