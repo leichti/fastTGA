@@ -107,6 +107,13 @@ class SampleRepository:
             return self.metadata.filter(combined_expr)
         return self.metadata
 
+    def change_meta_column_type(self, column, to_type):
+        # Change the type of a column in the metadata polars DataFrame.
+
+        self.metadata = self.metadata.with_columns(
+            pl.col(column).cast(to_type)
+        )
+
     def _get_sample_df(self, sample_id: str) -> pl.DataFrame:
         """
         Loads and returns a sample DataFrame corresponding to the given sample_id.
