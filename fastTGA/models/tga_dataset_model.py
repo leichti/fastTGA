@@ -76,9 +76,7 @@ class TGADatasetModel(QObject):
         # Update metadata table
         if not self.metadata_table.is_empty():
             self.metadata_table = self.metadata_table.filter(pl.col("id") != sample_id)
-        print(new_row.columns)
-        print("###")
-        print(self.metadata_table.columns)
+
         self.metadata_table = pl.concat([self.metadata_table, new_row], rechunk=True)
 
         if save:
@@ -199,7 +197,6 @@ if __name__ == "__main__":
     samples_multi = my_model.find_all([
         ("Sample Condition", "==", "Washed"),
         ("Sample", "==", "EAFD9")
-
     ])
 
     print(f"Found {len(samples_multi)} samples with Condition == 'Washed' and EAFD9")
