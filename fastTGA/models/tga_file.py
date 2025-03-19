@@ -134,9 +134,10 @@ class TGAFile():
 
 if __name__ == "__main__":
     file = TGAFile(
-        '/Users/manuelleuchtenmuller/Library/CloudStorage/OneDrive-HydrogenReductionLab/H2Lab Projects/H2Lab_D2V_24_9 Melting Behaviour/TGA/1745_RT12.txt')
+        '/Users/manuelleuchtenmuller/Library/CloudStorage/OneDrive-HydrogenReductionLab/H2Lab Projects/H2Lab_D2V_24_2 TGA Series 6/tga/1439_RT1#.txt')
     file.parse_file()
 
     print("Metadata:", file.metadata)
     print("\nData Schema:", file.data.schema)
     print("\nFirst few rows:", file.data.head())
+    print("\nLast row:", file.data[-1])
