@@ -20,6 +20,7 @@ class TGAEntryPreparator:
         tga_file = TGAFile(file_path)  # Loads Polars DataFrame in tga_file.data
 
         downsample_frequency = self.config.get("downsample_frequency", None)
+
         if downsample_frequency:
             tga_file.downsample(downsample_frequency)
 
@@ -34,7 +35,7 @@ class TGAEntryPreparator:
             metadata = gspread_model.get_metadata(name_in_file)
 
         if not metadata:
-            self.error_occurred.emit("Metadata not found for file: " + file_path)
+            print("Metadata not found for file: " + file_path.split("/")[-1])
             return None, None
 
         return tga_file, metadata
