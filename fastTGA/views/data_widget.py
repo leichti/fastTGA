@@ -26,7 +26,7 @@ class DataWidget(QWidget, Ui_DataWidget):
         self.select_api_pushButton.clicked.connect(self.open_api_selection)
         self.generate_hdf5_pushButton.clicked.connect(self.data_widget_view_model.create_dataset)
         self.select_output_directory_pushButton.clicked.connect(self.open_directory_dialog_for_output)
-        self.filename_regex_lineEdit.setText(r"RT[0-9]{1,2}")
+        self.filename_regex_lineEdit.setText(r"RT[0-9]{1,}")
 
     def open_txt_directory(self):
         # get directory handler

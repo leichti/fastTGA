@@ -134,7 +134,7 @@ class TGAFile():
 
 if __name__ == "__main__":
     file = TGAFile(
-        '/Users/manuelleuchtenmuller/Library/CloudStorage/OneDrive-HydrogenReductionLab/H2Lab Projects/H2Lab_D2V_24_2 TGA Series 6/tga/1439_RT1#.txt')
+       '/Users/manuelleuchtenmuller/Library/CloudStorage/OneDrive-HydrogenReductionLab/H2Lab Projects/H2Lab_PUB_25_4 Washing of EAFD as Pre-Treatment/TGA/series7/1942_RT183.txt')
     file.parse_file()
 
     print("Metadata:", file.metadata)

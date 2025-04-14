@@ -39,3 +39,14 @@ class MaxTemperatureFilter(DataFilter):
         Only keep rows for which the value in self.col is less than self.threshold.
         """
         return df.filter(pl.col(self.col) < self.threshold)
+
+class MinGasFlowRateFilter(DataFilter):
+    def __init__(self, col: str, threshold: float):
+        self.col = col
+        self.threshold = threshold
+
+    def apply(self, df: pl.DataFrame) -> pl.DataFrame:
+        """
+        Only keep rows for which the value in self.col is greater than self.threshold.
+        """
+        return df.filter(pl.col(self.col) > self.threshold)

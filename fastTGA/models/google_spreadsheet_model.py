@@ -62,28 +62,80 @@ class GoogleSpreadsheetModel(QThread):
 
     def load_worksheet(self, name):
         if name not in self.available_worksheets:
-            self.error_occurred.emit(f"Worksheet '{name}' not found in available worksheets.")
+            error_msg = f"Worksheet '{name}' not found in available worksheets."
+            print(error_msg)
+            self.error_occurred.emit(error_msg)
             return
+
+        print(f"Attempting to load worksheet: '{name}'")
+        data = []  # Initialize to prevent UnboundLocalError in except block
 
         try:
             worksheet = self.spreadsheet.worksheet(name)
-            data = worksheet.get_all_records()
-            self.table_df = pl.DataFrame(data)
-            self.table_df = self.table_df.rename({col: col.replace("\n", "") for col in self.table_df.columns})
+            data = worksheet.get_all_records()  # Use head=1
 
-            # Store settings
-            self.worksheet_to_load = name
-            self.settings.setValue('google_spreadsheet_model/last_worksheet', name)
+            # === Handle Empty Data / No Headers Gracefully ===
+            if not data:
+                print(f"Worksheet '{name}' appears empty or has no data after the header.")
+                self.table_df = pl.DataFrame()  # Assign empty DataFrame
+                # Decide if you want to emit an error or just load empty:
+                # self.error_occurred.emit(f"Worksheet '{name}' is empty or has no data.")
+            else:
+                all_string_schema = {}
+                # Check if the first row (headers dict) is non-empty
+                if data[0]:
+                    all_string_schema = {
+                        str(col).replace("\n", "").strip(): pl.Utf8
+                        for col in data[0].keys()
+                    }
 
-            # Set first column as lookup column if not set
-            if self.table_df.columns:
-                self.set_lookup_column(self.table_df.columns[0])
+                if not all_string_schema:
+                    print(f"No headers found or first row is empty in worksheet '{name}'.")
+                    self.table_df = pl.DataFrame()  # Assign empty DataFrame
+                    # Decide if you want to emit an error or just load empty:
+                    # self.error_occurred.emit(f"No headers found in worksheet '{name}'.")
+                else:
+                    # === Load using schema_overrides ===
+                    print(f"Loading '{name}' with columns as Utf8: {list(all_string_schema.keys())}")
+                    self.table_df = pl.DataFrame(data, schema_overrides=all_string_schema)
 
-            self.worksheet_loaded.emit(self.table_df)
+                    # === Verify/Fix Column Names (More Robust than blind rename) ===
+                    current_cols = self.table_df.columns
+                    rename_map = {
+                        curr: clean
+                        for curr, clean in zip(current_cols, all_string_schema.keys())
+                        if curr != clean
+                    }
+                    if rename_map:
+                        print(f"Renaming columns for consistency: {rename_map}")
+                        self.table_df = self.table_df.rename(rename_map)
+
+            # === Continue only if DataFrame was created successfully ===
+            if self.table_df is not None:  # Check if df exists (might be empty)
+                # Store settings
+                self.worksheet_to_load = name
+                self.settings.setValue('google_spreadsheet_model/last_worksheet', name)
+
+                # Set lookup column (more robustly)
+                if not self.table_df.is_empty() and self.table_df.columns:
+                    # Try to restore previous setting, otherwise default to first col
+                    previous_lookup = self.settings.value('google_spreadsheet_model/last_lookup_column')
+                    if previous_lookup and previous_lookup in self.table_df.columns:
+                        self.set_lookup_column(previous_lookup)
+                    else:
+                        if previous_lookup:
+                            print("Warning")
+                        self.set_lookup_column(self.table_df.columns[0])
+
+                self.worksheet_loaded.emit(self.table_df)
+                print(f"Worksheet '{name}' loaded successfully.")
 
         except Exception as e:
-            self.table_df = pl.DataFrame([])
-            self.error_occurred.emit(f"Error loading worksheet '{name}': {e}")
+            error_msg = f"Error loading worksheet '{name}': {e}"
+            self.table_df = pl.DataFrame([])  # Ensure table_df is an empty DataFrame on error
+            self.error_occurred.emit(error_msg)  # Emit only the error, not 'data'
+            # Emit empty df to clear view
+            self.worksheet_loaded.emit(self.table_df)
 
     def set_lookup_column(self, column):
         self.lookup_column = column

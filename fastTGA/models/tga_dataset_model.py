@@ -77,6 +77,12 @@ class TGADatasetModel(QObject):
         if not self.metadata_table.is_empty():
             self.metadata_table = self.metadata_table.filter(pl.col("id") != sample_id)
 
+        if len(self.metadata_table.columns) != len(new_row.columns) and len(self.metadata_table.columns) > 0:
+            self.message_signal.emit("Metadata columns do not match. Please check the data.")
+            self.message_signal.emit(f"Metadata columns: {self.metadata_table.columns}, New row columns: {new_row.columns}")
+            print(f"Metadata columns: {self.metadata_table.columns}, New row columns: {new_row.columns}")
+            return
+
         self.metadata_table = pl.concat([self.metadata_table, new_row], rechunk=True)
 
         if save:

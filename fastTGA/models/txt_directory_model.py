@@ -10,7 +10,7 @@ class TXTDirectoryModel(QObject):
     def __init__(self, txt_directory=None):
         super().__init__()
         self.txt_directory = txt_directory
-        self.regex = r"RT[0-9]{1,2}"
+        self.regex = r"RT[0-9]{1,}"
         self.txt_files = []
         if txt_directory:
             self.load_txt_files()
